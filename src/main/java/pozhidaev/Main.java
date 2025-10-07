@@ -10,6 +10,19 @@ public class Main {
         int listType = 1; // 1 - MySynchronizedList, 2 - Collections.synchronizedList(new ArrayList<>())
         AtomicInteger swapNumbers = new AtomicInteger(0);
 
+        Thread swapLogger = new Thread(() -> {
+            while (true) {
+                System.out.println("Количество перестановок: " + swapNumbers.get());
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        });
+        swapLogger.setDaemon(true);
+        swapLogger.start();
+
         if (args.length >= 1) {
             try {
                 sorterThreadsCount = Integer.parseInt(args[0]);
@@ -54,9 +67,9 @@ public class Main {
         for (int i = 0; i < sorterThreadsCount; i++) {
             Thread sorterThread;
             if (myList == null) {
-                sorterThread = new Thread(new StandartSorter(list, delayMillis));
+                sorterThread = new Thread(new StandartSorter(list, delayMillis, swapNumbers));
             } else {
-                sorterThread = new Thread(new Sorter((MySynchronizedList) myList, delayMillis));
+                sorterThread = new Thread(new Sorter((MySynchronizedList) myList, delayMillis, swapNumbers));
             }
             sorterThread.setDaemon(true);
             sorterThread.start();

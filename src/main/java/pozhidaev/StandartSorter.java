@@ -2,14 +2,17 @@ package pozhidaev;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StandartSorter implements Runnable {
     private final List<String> list;
     private final int delayMillis;
+    private AtomicInteger swapNumbers;
 
-    public StandartSorter(List<String> list, int delayMillis) {
+    public StandartSorter(List<String> list, int delayMillis,  AtomicInteger swapNumbers) {
         this.list = list;
         this.delayMillis = delayMillis;
+        this.swapNumbers = swapNumbers;
     }
 
     @Override
@@ -37,6 +40,7 @@ public class StandartSorter implements Runnable {
             if (current.compareTo(next) > 0) {
                 Collections.swap(list, i, i + 1);
             }
+            swapNumbers.incrementAndGet();
 
             if (delayMillis > 0) {
                 Thread.sleep(delayMillis);

@@ -1,12 +1,16 @@
 package pozhidaev;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class Sorter implements Runnable {
     private final MySynchronizedList list;
     private final int delayMillis;
+    private AtomicInteger swapNumbers;
 
-    public Sorter(MySynchronizedList list, int delayMillis) {
+    public Sorter(MySynchronizedList list, int delayMillis, AtomicInteger swapNumbers) {
         this.list = list;
         this.delayMillis = delayMillis;
+        this.swapNumbers = swapNumbers;
     }
 
     @Override
@@ -38,6 +42,7 @@ public class Sorter implements Runnable {
 
             if (node.value.compareTo(nextNode.value) > 0) {
                 list.swap(node, nextNode);
+                swapNumbers.incrementAndGet();
 
                 if (delayMillis > 0) {
                     Thread.sleep(delayMillis);
