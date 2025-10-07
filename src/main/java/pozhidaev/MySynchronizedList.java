@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 public class MySynchronizedList implements Iterable<Node> {
 
-    private Node head;
+    private volatile Node head;
 
     public synchronized Node getHead() {
         return head;
@@ -15,12 +15,24 @@ public class MySynchronizedList implements Iterable<Node> {
     }
 
     public synchronized void addFirst(String value) {
+        if (head == null) {
+            head = new Node(value, null, null);
+            return;
+        }
         Node new_node = new Node(value, head, null);
         head.prev = new_node;
         head = new_node;
     }
 
     public void swap(Node a, Node b) {
+        if (a == null || b == null || a == b) return;
+
+        if (b.next == a) { Node t = a; a = b; b = t; }
+
+        if (a.next != b || b.prev != a) {
+            throw new IllegalArgumentException("swap поддерживает только соседние узлы (a <-> b).");
+        }
+
         Node a_prev = a.prev;
         Node b_next = b.next;
 
@@ -29,19 +41,31 @@ public class MySynchronizedList implements Iterable<Node> {
         b.lock.lock();
         if (b_next != null) b_next.lock.lock();
 
-        if(a_prev != null) a_prev.next = b;
-        if(b_next != null) b_next.prev = a;
+        try {
+            if (a.prev != a_prev || a.next != b || b.prev != a || b.next != b_next) {
+                return;
+            }
 
-        b.next = a;
-        b.prev = a_prev;
+            if (a_prev != null) {
+                a_prev.next = b;
+            } else {
+                head = b;
+            }
+            if (b_next != null) {
+                b_next.prev = a;
+            }
 
-        a.next = b_next;
-        a.prev = b;
+            b.prev = a_prev;
+            b.next = a;
 
-        if (b_next != null) b_next.lock.unlock();
-        a.lock.unlock();
-        b.lock.unlock();
-        if (a_prev != null) a_prev.lock.unlock();
+            a.prev = b;
+            a.next = b_next;
+        } finally {
+            if (b_next != null) b_next.lock.unlock();
+            b.lock.unlock();
+            a.lock.unlock();
+            if (a_prev != null) a_prev.lock.unlock();
+        }
     }
 
     @Override

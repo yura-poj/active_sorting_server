@@ -39,8 +39,8 @@ public class StandartSorter implements Runnable {
 
             if (current.compareTo(next) > 0) {
                 Collections.swap(list, i, i + 1);
+                swapNumbers.incrementAndGet();
             }
-            swapNumbers.incrementAndGet();
 
             if (delayMillis > 0) {
                 Thread.sleep(delayMillis);
